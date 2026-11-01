@@ -6,6 +6,12 @@ stays, and shows the history in a dashboard.
 
 Windows 10 and 11.
 
+![All devices: how long each one has been online, and today's timeline](docs/screenshots/overview.png)
+
+| A device's page | The log | The network scan, in light mode |
+|---|---|---|
+| ![A device's page: online time, the last 7 days and recent activity](docs/screenshots/device.png) | ![Every device's events, by day](docs/screenshots/log.png) | ![Every device on the network, ready to watch or rename](docs/screenshots/devices-light.png) |
+
 ## What it does
 
 - **Watches any number of devices**, checking each one every 5 minutes. It asks the device for
