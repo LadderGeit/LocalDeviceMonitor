@@ -1,0 +1,49 @@
+{
+  "name": "local-device-monitor",
+  "productName": "Local Device Monitor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "See when the devices on your home network come and go.",
+  "author": "LadderGoat",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "node scripts/package.js",
+    "dist": "node scripts/package.js msi",
+    "postinstall": "node --experimental-require-module node_modules/electron/install.js"
+  },
+  "build": {
+    "appId": "dev.laddergoat.localdevicemonitor",
+    "productName": "Local Device Monitor",
+    "electronLanguages": ["en-US"],
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "theme.js",
+      "index.html",
+      "styles.css",
+      "package.json",
+      "build/icon.png",
+      "!node_modules/**/*"
+    ],
+    "extraResources": [
+      { "from": "../Watch-Device.ps1", "to": "Watch-Device.ps1" },
+      { "from": "../Scan-Network.ps1", "to": "Scan-Network.ps1" },
+      { "from": "build/icon.ico", "to": "icon.ico" }
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "dir",
+      "icon": "build/icon.ico"
+    }
+  },
+  "devDependencies": {
+    "electron": "45.2.1",
+    "electron-builder": "26.15.3"
+  }
+}

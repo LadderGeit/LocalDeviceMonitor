@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+  <title>Local Device Monitor</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-tab="summary">
+  <header class="topbar">
+    <div class="brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M5 10a10 10 0 0 1 14 0"/><path d="M8.5 13.5a5 5 0 0 1 7 0"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/>
+      </svg>
+      <span>Local Device Monitor</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button type="button" role="tab" id="tab-summary" data-tab="summary" aria-controls="view-summary" aria-selected="true">Summary</button>
+      <button type="button" role="tab" id="tab-log" data-tab="log" aria-controls="view-log" aria-selected="false" tabindex="-1">Log <span class="count" id="log-count"></span></button>
+      <button type="button" role="tab" id="tab-devices" data-tab="devices" aria-controls="view-devices" aria-selected="false" tabindex="-1">Devices</button>
+    </nav>
+    <div class="topbar-end">
+      <div class="watcher-chip" id="watcher-chip" aria-live="polite"></div>
+      <button type="button" class="theme-switch" id="theme-toggle" role="switch" aria-checked="true" aria-label="Dark mode">
+        <span class="switch-thumb">
+          <svg class="icon-sun" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <svg class="icon-moon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar" aria-label="Watched devices">
+      <button type="button" class="side-item" id="side-all" data-select="all">
+        <span class="side-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1.2"/><rect x="9" y="2" width="5" height="5" rx="1.2"/><rect x="2" y="9" width="5" height="5" rx="1.2"/><rect x="9" y="9" width="5" height="5" rx="1.2"/></svg>
+        </span>
+        <span class="side-text"><span class="side-name">All devices</span><span class="side-sub" id="side-all-sub"></span></span>
+      </button>
+      <p class="side-label">Watching</p>
+      <div class="side-list" id="side-devices"></div>
+      <button type="button" class="side-add" data-action="devices">+ Watch a device</button>
+    </aside>
+
+    <main>
+      <div class="banner" id="offline-banner" role="status" hidden>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 10a10 10 0 0 1 14 0"/><path d="M8.5 13.5a5 5 0 0 1 7 0"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/><path d="M3 3l18 18"/>
+        </svg>
+        <p><strong>No internet connection.</strong> Manufacturer names and your public IP can't be looked up right now, so some devices show without a name. Watching your devices keeps working, as it only uses your local network. This clears by itself once you're back online.</p>
+      </div>
+
+      <section class="view" id="view-summary" role="tabpanel" aria-labelledby="tab-summary">
+        <div class="empty-state" id="summary-empty" hidden>
+          <h1>Nothing is being watched</h1>
+          <p>The watcher stops when no devices are left to watch. Pick the devices you want to keep an eye on in the Devices tab, and it starts again; their history shows up here after the first check.</p>
+          <div class="actions">
+            <button type="button" class="btn primary" data-action="devices">Pick devices</button>
+          </div>
+        </div>
+
+        <div class="summary" id="overview" hidden>
+          <div class="device-head">
+            <div>
+              <h1>All devices</h1>
+              <p class="device-sub" id="overview-sub"></p>
+            </div>
+          </div>
+          <div class="device-cards" id="device-cards"></div>
+          <article class="card">
+            <header class="card-head">
+              <h2>Today</h2>
+              <ul class="legend">
+                <li><span class="swatch on"></span>Online</li>
+                <li><span class="swatch off"></span>Offline</li>
+                <li><span class="swatch none"></span>Not watched</li>
+              </ul>
+            </header>
+            <div class="timeline" id="today-timeline"></div>
+          </article>
+          <article class="card">
+            <header class="card-head"><h2>Watcher</h2></header>
+            <dl class="facts" id="watcher-facts"></dl>
+            <div class="actions">
+              <button type="button" class="btn go" data-action="start">Start watcher</button>
+              <button type="button" class="btn stop" data-action="stop">Stop watcher</button>
+              <button type="button" class="btn" data-action="logs">Open logs folder</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="summary" id="detail" hidden>
+          <div class="device-head">
+            <div>
+              <div class="title-row">
+                <h1 id="device-name"></h1>
+                <div class="head-actions">
+                  <button type="button" class="btn small" data-action="rename">Rename</button>
+                  <button type="button" class="btn small stop" data-action="unwatch">Stop watching</button>
+                </div>
+              </div>
+              <p class="device-sub" id="device-sub"></p>
+            </div>
+          </div>
+
+          <div class="tiles">
+            <article class="tile hero" id="tile-now"></article>
+            <article class="tile" id="tile-today"></article>
+            <article class="tile" id="tile-week"></article>
+            <article class="tile" id="tile-longest"></article>
+          </div>
+
+          <article class="card">
+            <header class="card-head">
+              <h2>Last 7 days</h2>
+              <ul class="legend">
+                <li><span class="swatch on"></span>Online</li>
+                <li><span class="swatch off"></span>Offline</li>
+                <li><span class="swatch none"></span>Not watched</li>
+              </ul>
+            </header>
+            <div class="timeline" id="timeline"></div>
+          </article>
+
+          <div class="cards-2">
+            <article class="card">
+              <header class="card-head"><h2>Device</h2></header>
+              <dl class="facts" id="device-facts"></dl>
+              <div class="actions">
+                <button type="button" class="btn" data-action="log">Open log file</button>
+              </div>
+            </article>
+            <article class="card">
+              <header class="card-head">
+                <h2>Recent activity</h2>
+                <button type="button" class="link-btn" data-action="show-log">Full log</button>
+              </header>
+              <ol class="activity" id="activity"></ol>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-log" role="tabpanel" aria-labelledby="tab-log" hidden>
+        <div class="view-head">
+          <h2 id="log-title"></h2>
+          <p id="log-sub"></p>
+        </div>
+        <div class="toolbar">
+          <div class="segmented" id="log-filters" role="group" aria-label="Show"></div>
+          <input type="search" class="search" id="log-search" placeholder="Search the log" aria-label="Search the log">
+          <div class="toolbar-actions">
+            <button type="button" class="btn" data-action="log" id="open-log-button">Open log file</button>
+            <button type="button" class="btn" data-action="clear" id="clear-button">Clear log</button>
+          </div>
+        </div>
+        <div class="card table-card">
+          <table class="data-table log" id="log-table">
+            <thead>
+              <tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col" class="col-device">Device</th><th scope="col">Details</th><th scope="col">IP address</th></tr>
+            </thead>
+            <tbody id="log-body"></tbody>
+          </table>
+          <p class="empty" id="log-empty" hidden></p>
+        </div>
+      </section>
+
+      <section class="view" id="view-devices" role="tabpanel" aria-labelledby="tab-devices" hidden>
+        <div class="toolbar">
+          <div class="toolbar-text">
+            <h2>Devices on your network</h2>
+            <p id="scan-note" aria-live="polite"></p>
+            <p id="public-note"></p>
+          </div>
+          <div class="toolbar-actions">
+            <button type="button" class="btn primary" id="scan-button">Scan network</button>
+          </div>
+        </div>
+        <div class="card table-card">
+          <table class="data-table devices">
+            <thead>
+              <tr><th scope="col">Device</th><th scope="col">Manufacturer</th><th scope="col">Local IP</th><th scope="col">Public IP</th><th scope="col">MAC address</th><th scope="col"><span class="visually-hidden">Action</span></th></tr>
+            </thead>
+            <tbody id="devices-body"></tbody>
+          </table>
+          <p class="empty" id="devices-empty" hidden></p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="confirm" id="clear-dialog" aria-labelledby="clear-title">
+    <form method="dialog">
+      <h2 id="clear-title">Clear the log?</h2>
+      <p id="clear-text"></p>
+      <div class="dialog-actions">
+        <button type="submit" class="btn" value="cancel" autofocus>Cancel</button>
+        <button type="submit" class="btn danger" value="clear" id="clear-confirm">Clear log</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="confirm" id="rename-dialog" aria-labelledby="rename-title">
+    <form method="dialog">
+      <h2 id="rename-title">Rename device</h2>
+      <p class="mono" id="rename-mac"></p>
+      <label class="field">
+        <span>Name</span>
+        <input type="text" id="rename-input" maxlength="40" autocomplete="off" spellcheck="false">
+      </label>
+      <p class="hint">Leave it empty to use the name the device reports, or its manufacturer.</p>
+      <div class="dialog-actions">
+        <button type="submit" class="btn" value="cancel" formnovalidate>Cancel</button>
+        <button type="submit" class="btn primary" value="save">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  <script src="renderer.js"></script>
+</body>
+</html>

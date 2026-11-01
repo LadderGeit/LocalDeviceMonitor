@@ -1,0 +1,12 @@
+# Your own data: device names, MAC and IP addresses, and their history.
+device-config.json
+watcher-status.json
+vendor-cache.json
+logs/
+*.tmp
+
+# Installed packages, including Electron. Run `npm install` in dashboard/ to get them back.
+node_modules/
+
+# What `npm run pack` and `npm run dist` build: the packed app and the installer.
+dist/
